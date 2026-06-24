@@ -4,6 +4,8 @@ Minimal iOS repro project for scroll edge effect and blur behavior across UIKit 
 
 This repo exists so other developers can inspect, reproduce, and help debug scroll edge effect behavior around edge-attached controls, blur, and `safeAreaBar`.
 
+The screenshots and current repro notes are captured against an iOS 27.0 simulator, where the issues are easier to see.
+
 The sample compares these cases:
 
 - `UITableView` in a `UINavigationController`
@@ -14,7 +16,19 @@ The sample compares these cases:
 
 Each screen exposes the scroll edge effect style controls for `automatic`, `hard`, and `soft`, plus top and bottom edge-attached controls. The SwiftUI list sample includes an inline note around the `safeAreaBar(edge: .top)` placement that appears related to janky scrolling.
 
+## Suspected Bugs
+
+These are the behaviors this project is trying to make obvious:
+
+- Top edge blur can obscure or wash out the first visible row behind the floating effect-style control.
+- Bottom edge blur can create an oversized hazy band around the floating action button and tab bar.
+- SwiftUI `List` appears sensitive to where `safeAreaBar(edge: .top)` is attached; placing it inside the `NavigationStack` can make scrolling feel janky.
+- On iOS 27.0, UI settling after tab changes and menu presentation appears noticeably less stable while capturing snapshots.
+- The same edge-control pattern does not look identical across UIKit `UITableView`, UIKit `UICollectionView`, `UICollectionViewController`, SwiftUI `List`, and SwiftUI `ScrollView`.
+
 ## Screenshots
+
+Captured on iOS 27.0 using an iPhone 17 Pro simulator.
 
 <table>
   <tr>
@@ -23,9 +37,9 @@ Each screen exposes the scroll edge effect style controls for `automatic`, `hard
     <td align="center"><strong>UICollectionViewController</strong></td>
   </tr>
   <tr>
-    <td><img src="Docs/Screenshots/table.png" width="240" alt="UITableView sample with scroll edge effect controls"></td>
-    <td><img src="Docs/Screenshots/grid.png" width="240" alt="UICollectionView grid sample with scroll edge effect controls"></td>
-    <td><img src="Docs/Screenshots/collection-view-controller.png" width="240" alt="UICollectionViewController sample with scroll edge effect controls"></td>
+    <td><img src="Docs/Screenshots/table.png" width="240" alt="iOS 27 UITableView sample showing top edge blur around scroll edge effect controls"></td>
+    <td><img src="Docs/Screenshots/grid.png" width="240" alt="iOS 27 UICollectionView grid sample showing scroll edge effect controls"></td>
+    <td><img src="Docs/Screenshots/collection-view-controller.png" width="240" alt="iOS 27 UICollectionViewController sample showing scroll edge effect controls"></td>
   </tr>
   <tr>
     <td align="center"><strong>SwiftUI List</strong></td>
@@ -33,9 +47,9 @@ Each screen exposes the scroll edge effect style controls for `automatic`, `hard
     <td align="center"><strong>Effect Style Menu</strong></td>
   </tr>
   <tr>
-    <td><img src="Docs/Screenshots/swiftui-list.png" width="240" alt="SwiftUI List sample with safe area bar controls"></td>
-    <td><img src="Docs/Screenshots/swiftui-scrollview.png" width="240" alt="SwiftUI ScrollView LazyVStack sample with safe area bar controls"></td>
-    <td><img src="Docs/Screenshots/effect-style-menu.png" width="240" alt="Effect style menu showing Automatic Hard and Soft options"></td>
+    <td><img src="Docs/Screenshots/swiftui-list.png" width="240" alt="iOS 27 SwiftUI List sample with safe area bar controls"></td>
+    <td><img src="Docs/Screenshots/swiftui-scrollview.png" width="240" alt="iOS 27 SwiftUI ScrollView LazyVStack sample with safe area bar controls and bottom blur"></td>
+    <td><img src="Docs/Screenshots/effect-style-menu.png" width="240" alt="iOS 27 effect style menu showing Automatic Hard and Soft options above bottom edge blur"></td>
   </tr>
 </table>
 
@@ -45,6 +59,7 @@ Each screen exposes the scroll edge effect style controls for `automatic`, `hard
 - The floating bottom button is attached to the bottom scroll edge.
 - In `SwiftUIListSampleView`, moving the top `safeAreaBar(edge: .top)` inside the `NavigationStack` reproduces the janky scroll behavior this project is meant to isolate.
 - UIKit samples use `UIScrollEdgeElementContainerInteraction`; SwiftUI samples use `safeAreaBar` and `scrollEdgeEffectStyle`.
+- Prefer testing on iOS 27.0 first; the blur and scroll-edge artifacts are more visible than on iOS 26.5.
 
 ## Project Layout
 
@@ -68,7 +83,8 @@ ScrollEdgeEffectBlurIssue/
 ## Requirements
 
 - Xcode 26.5 or newer
-- iOS 26.0 or newer simulator/runtime
+- iOS 27.0 simulator/runtime recommended for debugging the visible artifacts
+- iOS 26.0 or newer deployment target
 
 ## Run
 
@@ -80,7 +96,7 @@ From the command line:
 xcodebuild \
   -project ScrollEdgeEffectBlurIssue.xcodeproj \
   -scheme ScrollEdgeEffectBlurIssue \
-  -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.5' \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=27.0' \
   build
 ```
 
